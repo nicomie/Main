@@ -49,7 +49,7 @@ class Tank implements GameObject{
         PVector desired = PVector.sub(target, position);
         float d = desired.mag();
         desired.normalize();
-        if(d < 0) {
+        if(d < 1) {
           map.proceed();
         }
         else if (d < 10) {

@@ -22,7 +22,7 @@ Stack<Node> stack = new Stack<>();
 
   public void proceed(){
 
-    while (!stack.isEmpty()) {
+    if (!stack.isEmpty()) {
         Node currentNode = stack.peek();
       
         ArrayList<Node> neighbors = getNeighbors(currentNode);
@@ -32,7 +32,7 @@ Stack<Node> stack = new Stack<>();
                 neighbor.visited = true;
                 stack.push(neighbor);
                 foundUnvisitedNeighbor = true;
-                tank.moveTo(currentNode.getMapPosition());
+                tank.moveTo(neighbor.getMapPosition());
                 break;
             }
         }

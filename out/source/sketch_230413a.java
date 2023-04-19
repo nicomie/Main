@@ -110,7 +110,7 @@ Stack<Node> stack = new Stack<>();
 
   public void proceed(){
 
-    while (!stack.isEmpty()) {
+    if (!stack.isEmpty()) {
         Node currentNode = stack.peek();
       
         ArrayList<Node> neighbors = getNeighbors(currentNode);
@@ -120,7 +120,7 @@ Stack<Node> stack = new Stack<>();
                 neighbor.visited = true;
                 stack.push(neighbor);
                 foundUnvisitedNeighbor = true;
-                tank.moveTo(currentNode.getMapPosition());
+                tank.moveTo(neighbor.getMapPosition());
                 break;
             }
         }
@@ -277,7 +277,7 @@ class Tank implements GameObject{
         PVector desired = PVector.sub(target, position);
         float d = desired.mag();
         desired.normalize();
-        if(d < 0) {
+        if(d < 1) {
           map.proceed();
         }
         else if (d < 10) {

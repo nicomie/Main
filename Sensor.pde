@@ -1,3 +1,5 @@
+// Nicholas Miettinen nimi9384
+
 import java.util.Map;
 
 class Sensor {
@@ -31,7 +33,7 @@ class Sensor {
                     }
                    
                 } else {
-                    // out of bound
+                    // out of bounds
                     adjacent.put(new PVector(i, j), 2);
                 }       
             }

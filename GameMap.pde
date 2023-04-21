@@ -1,3 +1,5 @@
+// Nicholas Miettinen nimi9384
+
 import java.util.Collections;
 import java.util.Stack;
 class GameMap {
@@ -14,8 +16,6 @@ class GameMap {
         cols = c;
         rows = r;
         grid_size = size;
-       // this.tank = tank;
-  
         nodes = new Node[cols][rows];
         init();
         generateObstacles(15);
@@ -71,21 +71,35 @@ class GameMap {
             }
         }
     }
+
+    // add danger zone!!! if player encountered enemy
+    void rememberDanger(PVector pos){
+        PVector raw = lookup(pos);
+
+        int x = int(raw.x);
+        int y = int(raw.y);
+
+        for(int i = x-2; i < x+2; i++){
+            for(int j = y-2; j < y+2; j++){
+                if(i >= 0 && i < cols && j >= 0 && j < map.rows) {
+                    nodes[i][j].visited = true;
+                }
+            }
+        }
+    }
     
+    // Returns the grid coordinate
     public PVector lookup(PVector vec) {
         return new PVector(int(vec.x / grid_size), int(vec.y / grid_size) );
     }
 
+    // Returns the absolute coordinate of a grid coordinate
     public PVector gridToMap(PVector vec){
-
-        println(vec); 
         return new PVector(vec.x*grid_size+20, vec.y*grid_size+20);
     }
 
     void setVisited(PVector vec){
         PVector raw = lookup(vec);
-
-
 
         if(raw.x > 19){
             raw.x = 19;
@@ -93,34 +107,13 @@ class GameMap {
         if(raw.y > 19){
             raw.y = 19;
         }
-       
-
-     
         
         nodes[int(raw.x)][int(raw.y)].visited = true;
     }
     
-    public void proceed() {
-        
-        if (!stack.isEmpty()) {
-            Node currentNode = stack.peek();
-            
-            ArrayList<Node> neighbors = getNeighbors(currentNode);
-            boolean foundUnvisitedNeighbor = false;
-            for (Node neighbor : neighbors) {
-                if (!neighbor.visited) {
-                    neighbor.visited = true;
-                    stack.push(neighbor);
-                    foundUnvisitedNeighbor = true;
-                    tank.moveTo(neighbor.getMapPosition());
-                    break;
-                }
-            }
-            if (!foundUnvisitedNeighbor) {
-                stack.pop();
-            }
-        }
-    }
+    /*
+    * Alternative patrol method
+    * Using the Depth First Search (DFS).
     
     public ArrayList<Node> getNeighbors(Node node) {
         ArrayList<Node> neighbors = new ArrayList<>();
@@ -153,28 +146,30 @@ class GameMap {
         proceed();
     }
 
-    // add danger zone!!! if player encountered enemy
-    void rememberDanger(PVector pos){
-        PVector raw = lookup(pos);
-
-        int x = int(raw.x);
-        int y = int(raw.y);
-
-        for(int i = x-2; i < x+2; i++){
-            for(int j = y-2; j < y+2; j++){
-                if(i >= 0 && i < cols && j >= 0 && j < map.rows) {
-                    nodes[i][j].visited = true;
+    public void proceed() {
+        
+        if (!stack.isEmpty()) {
+            Node currentNode = stack.peek();
+            
+            ArrayList<Node> neighbors = getNeighbors(currentNode);
+            boolean foundUnvisitedNeighbor = false;
+            for (Node neighbor : neighbors) {
+                if (!neighbor.visited) {
+                    neighbor.visited = true;
+                    stack.push(neighbor);
+                    foundUnvisitedNeighbor = true;
+                    tank.moveTo(neighbor.getMapPosition());
+                    break;
                 }
             }
-            
+            if (!foundUnvisitedNeighbor) {
+                stack.pop();
+            }
         }
-
     }
-    
+    */
+
 }
-
-
-
 
 class Node {
     int x, y, size;

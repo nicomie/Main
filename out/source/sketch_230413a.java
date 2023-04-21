@@ -19,26 +19,20 @@ import java.io.IOException;
 
 public class sketch_230413a extends PApplet {
 
-
 Tank tank;
 GameMap map;
-Obstacle o1,o2,o3;
 
 public void setup() {
     /* size commented out by preprocessor */;
-   
     map = new GameMap(20, 20, 40);
     tank = new Tank(map);
     map.register(tank);
     
 }
 
-public void draw() {
-    
+public void draw() {    
     background(255);
     map.display();
-    
-    
 }
 
 public void keyPressed(){
@@ -65,8 +59,6 @@ class GameMap {
         cols = c;
         rows = r;
         grid_size = size;
-       // this.tank = tank;
-  
         nodes = new Node[cols][rows];
         init();
         generateObstacles(15);
@@ -122,6 +114,22 @@ class GameMap {
             }
         }
     }
+
+    // add danger zone!!! if player encountered enemy
+    public void rememberDanger(PVector pos){
+        PVector raw = lookup(pos);
+
+        int x = PApplet.parseInt(raw.x);
+        int y = PApplet.parseInt(raw.y);
+
+        for(int i = x-2; i < x+2; i++){
+            for(int j = y-2; j < y+2; j++){
+                if(i >= 0 && i < cols && j >= 0 && j < map.rows) {
+                    nodes[i][j].visited = true;
+                }
+            }
+        }
+    }
     
     public PVector lookup(PVector vec) {
         return new PVector(PApplet.parseInt(vec.x / grid_size), PApplet.parseInt(vec.y / grid_size) );
@@ -136,42 +144,18 @@ class GameMap {
     public void setVisited(PVector vec){
         PVector raw = lookup(vec);
 
-
-
         if(raw.x > 19){
             raw.x = 19;
         }
         if(raw.y > 19){
             raw.y = 19;
         }
-       
-
-     
         
         nodes[PApplet.parseInt(raw.x)][PApplet.parseInt(raw.y)].visited = true;
     }
     
-    public void proceed() {
-        
-        if (!stack.isEmpty()) {
-            Node currentNode = stack.peek();
-            
-            ArrayList<Node> neighbors = getNeighbors(currentNode);
-            boolean foundUnvisitedNeighbor = false;
-            for (Node neighbor : neighbors) {
-                if (!neighbor.visited) {
-                    neighbor.visited = true;
-                    stack.push(neighbor);
-                    foundUnvisitedNeighbor = true;
-                    tank.moveTo(neighbor.getMapPosition());
-                    break;
-                }
-            }
-            if (!foundUnvisitedNeighbor) {
-                stack.pop();
-            }
-        }
-    }
+    /*
+    * Alternative patrol method
     
     public ArrayList<Node> getNeighbors(Node node) {
         ArrayList<Node> neighbors = new ArrayList<>();
@@ -204,28 +188,30 @@ class GameMap {
         proceed();
     }
 
-    // add danger zone!!! if player encountered enemy
-    public void rememberDanger(PVector pos){
-        PVector raw = lookup(pos);
-
-        int x = PApplet.parseInt(raw.x);
-        int y = PApplet.parseInt(raw.y);
-
-        for(int i = x-2; i < x+2; i++){
-            for(int j = y-2; j < y+2; j++){
-                if(i >= 0 && i < cols && j >= 0 && j < map.rows) {
-                    nodes[i][j].visited = true;
+    public void proceed() {
+        
+        if (!stack.isEmpty()) {
+            Node currentNode = stack.peek();
+            
+            ArrayList<Node> neighbors = getNeighbors(currentNode);
+            boolean foundUnvisitedNeighbor = false;
+            for (Node neighbor : neighbors) {
+                if (!neighbor.visited) {
+                    neighbor.visited = true;
+                    stack.push(neighbor);
+                    foundUnvisitedNeighbor = true;
+                    tank.moveTo(neighbor.getMapPosition());
+                    break;
                 }
             }
-            
+            if (!foundUnvisitedNeighbor) {
+                stack.pop();
+            }
         }
-
     }
-    
+    */
+
 }
-
-
-
 
 class Node {
     int x, y, size;
@@ -312,17 +298,12 @@ class Sensor {
                     }
                    
                 } else {
-                    // out of bound
+                    // out of bounds
                     adjacent.put(new PVector(i, j), 2);
-                }
-              
-               
-                
+                }       
             }
-        }
-        
-        return adjacent;
-       
+        }        
+        return adjacent; 
     }
 
 }
@@ -332,7 +313,6 @@ class Tank implements GameObject{
     int height = 50;
     
     GameMap map;
-    boolean inMotion = false;
     
     PVector position;
     PVector velocity;
@@ -353,7 +333,6 @@ class Tank implements GameObject{
         position = new PVector(300, 300);
         velocity = acceleration = target = new PVector(0,0);
 
-
         executeAction();
         
     }
@@ -365,16 +344,12 @@ class Tank implements GameObject{
     public void executeAction() {
         float prob = 0.01f;
         HashMap<PVector, Integer> percepts = percept();
-        
-        for (Map.Entry me : percepts.entrySet()) {
-         //   print(me.getKey() + " is ");
-          //  println(me.getValue());
-        }
-        
+    
         PVector nextPos = getNextPosition();
 
         int info = percepts.get(nextPos);
 
+        // Simulating percepting and acting
         boolean ready = false;
         while(!ready){
             if(info == 3){
@@ -415,13 +390,8 @@ class Tank implements GameObject{
         int stepx = PApplet.parseInt(random(3)) - 1;
         int stepy = PApplet.parseInt(random(3)) - 1;
 
-        print("X" + stepx);
-        print("Y" + stepy);
-        println();
-        
         return new PVector((int)raw.x + stepx, (int)raw.y + stepy);
-        
-        
+         
     }
     
     public PVector getPosition() {
@@ -442,7 +412,6 @@ class Tank implements GameObject{
 
         PVector desired = PVector.sub(target, position);
        
-
         float d = desired.mag();
         desired.normalize();
        
@@ -464,9 +433,7 @@ class Tank implements GameObject{
     
     public void resume(){
         paused = false;
-    }
-    
-    
+    }  
     
     public void render() {
         arrive();
@@ -478,7 +445,6 @@ class Tank implements GameObject{
         // Reset accelerationelertion to 0 each cycle
         acceleration.mult(0);
         display();
-        
     }
     
     public void display() {
@@ -487,7 +453,6 @@ class Tank implements GameObject{
         fill(127);
         ellipse(position.x, position.y, 50, 50);
         line(position.x, position.y, position.x + (50*cos(heading)), position.y + (50*sin(heading)));
-
     }
     
 }

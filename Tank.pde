@@ -1,9 +1,10 @@
+// Nicholas Miettinen nimi9384
+
 class Tank implements GameObject{
     int width = 50;
     int height = 50;
     
     GameMap map;
-    boolean inMotion = false;
     
     PVector position;
     PVector velocity;
@@ -24,7 +25,6 @@ class Tank implements GameObject{
         position = new PVector(300, 300);
         velocity = acceleration = target = new PVector(0,0);
 
-
         executeAction();
         
     }
@@ -36,16 +36,12 @@ class Tank implements GameObject{
     void executeAction() {
         float prob = 0.01;
         HashMap<PVector, Integer> percepts = percept();
-        
-        for (Map.Entry me : percepts.entrySet()) {
-         //   print(me.getKey() + " is ");
-          //  println(me.getValue());
-        }
-        
+    
         PVector nextPos = getNextPosition();
 
         int info = percepts.get(nextPos);
 
+        // Simulating percepting and acting
         boolean ready = false;
         while(!ready){
             if(info == 3){
@@ -86,13 +82,8 @@ class Tank implements GameObject{
         int stepx = int(random(3)) - 1;
         int stepy = int(random(3)) - 1;
 
-        print("X" + stepx);
-        print("Y" + stepy);
-        println();
-        
         return new PVector((int)raw.x + stepx, (int)raw.y + stepy);
-        
-        
+         
     }
     
     public PVector getPosition() {
@@ -109,11 +100,14 @@ class Tank implements GameObject{
         this.target = target;
     }
     
+    /*
+    * Här används koden av Daniel Shiffman för ett "Arriving Behaviour"
+    * Daniel Shiffman. The Nature of Code, Ch. 6.4. https://natureofcode.com/book/chapter-6-autonomous-agents/
+    */
     void arrive() {
 
         PVector desired = PVector.sub(target, position);
        
-
         float d = desired.mag();
         desired.normalize();
        
@@ -135,9 +129,7 @@ class Tank implements GameObject{
     
     void resume(){
         paused = false;
-    }
-    
-    
+    }  
     
     void render() {
         arrive();
@@ -149,7 +141,6 @@ class Tank implements GameObject{
         // Reset accelerationelertion to 0 each cycle
         acceleration.mult(0);
         display();
-        
     }
     
     void display() {
@@ -158,7 +149,6 @@ class Tank implements GameObject{
         fill(127);
         ellipse(position.x, position.y, 50, 50);
         line(position.x, position.y, position.x + (50*cos(heading)), position.y + (50*sin(heading)));
-
     }
     
 }

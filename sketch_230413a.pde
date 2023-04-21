@@ -1,36 +1,30 @@
 
 Tank tank;
-Grid grid;
-GameLogic gl;
+GameMap map;
+Obstacle o1,o2,o3;
 
 void setup() {
-   size(800, 800);
-
-   gl = new GameLogic(grid);
-
-   grid = new Grid(20, 20, 40);
-   tank = new Tank(grid, gl);
-
-   grid.runDfs();
+    size(800, 800);
    
+    map = new GameMap(20, 20, 40);
+    tank = new Tank(map);
+    map.register(tank);
+    
 }
 
 void draw() {
-
-  draw_map();
-
-  tank.update();
-  grid.display();
-
-
+    
+    background(255);
+    map.display();
+    
+    
 }
 
-void draw_map() {
-   background(255);
+void keyPressed(){
+    tank.resume();
+}
+
   
-   fill(255, 0, 0);
-   rect(0, 0, 150, 350);
+    
  
-   fill(0, 0, 255);
-   rect(width-151, height-351, 150, 350);
-}
+

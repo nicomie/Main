@@ -10,4 +10,4 @@ https://www.youtube.com/watch?v=LKuu-WcOZYA&ab_channel=MAKinteract
 
 # Processing
 
-Open the folder in processing and run the file "main.pde"
+Rename the folder to "Main", open the folder in processing and run the file "Main.pde"

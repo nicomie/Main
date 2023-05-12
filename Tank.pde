@@ -14,7 +14,7 @@ class Tank implements Sound {
     PVector acceleration;
     PVector target;
     float heading;
-    float topspeed = 1;
+    float topspeed = 2;
     float rotationspeed = 2;
     
     boolean rotating = false;
@@ -31,6 +31,8 @@ class Tank implements Sound {
     FOV fov;
     
     Cannon cannon;
+
+    PVector soundTarget = new PVector(0,0);
     
     Tank(PVector pos, color team_color, float heading, int id) {
         this.pos = pos;
@@ -50,8 +52,12 @@ class Tank implements Sound {
         s.make_sound(pos);
     }
     
+    // AI Relevant code: The warning shot used for task announcement. 
+    // This together with the message should generate a bidding process
+    // A bidding process is started if a message is received and a sound is perceived in a certain time interval.
     void perceive_sound(PVector pos) {
-        print("ok");
+        print("starting the bidding process");
+        soundTarget = pos;
     }
     
     void add_sound_manager(SoundManager s) {
@@ -63,8 +69,11 @@ class Tank implements Sound {
     
     // AI Relevant code: The method is used by agents to receive the task announcement
     void listenTo(Message m) {
-        print("Message received from " + m.id + " by " + id);
+        println("Message received from " + m.id + " by " + id);
+        // Start bid
     }
+
+
     
     void rotate() {
         PVector desired = PVector.sub(target, pos);

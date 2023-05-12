@@ -1,3 +1,5 @@
+// Created by Nicholas Miettinen
+
 import java.util.ArrayList;
 
 class Team {
@@ -7,49 +9,53 @@ class Team {
     color team_color;
     float heading;
     Radio radio = new Radio();
-
-    Team(ArrayList<PVector> positions, Game_map map, Base base, color team_color, float heading){
+    
+    Team(ArrayList<PVector> positions, Game_map map, Base base, color team_color, float heading) {
         this.map = map;
         this.team_color = team_color;
         this.base = base;
         this.heading = heading;
-
-      
         
-        for(PVector p : positions){
+        
+        
+        for (PVector p : positions) {
             Tank t = new Tank(p, team_color, heading, map.generateId());
             t.add_fov(new FOV(map, t));
             tanks.add(t);
+
+            // AI Relevant code: Connects the team members to a common radio
             radio.add_member(t);
             t.connectTo(radio);
+
+            // AI Relevant code: Registers the tanks to the SoundManager instance.
             sm.add_sound(tank);
             t.add_sound_manager(sm);
         }
-
-      
+        
+        
         map.add(tanks);
         
     }
-
-    void render(){
-       
+    
+    void render() {
+        
         base.render();
-
-        for(Tank tank : tanks){
-       
+        
+        for (Tank tank : tanks) {
+            
             tank.move();
             map.update(tank);
             tank.display();
-        
+            
             tank.fov.sense();
             tank.fov.draw();
-       
-     
+            
+            
         }
-
-    
-
+        
+        
+        
     }
-
+    
 }
 

@@ -1,154 +1,142 @@
-// Nicholas Miettinen nimi9384
+import java.util.ArrayList;
 
-class Tank implements GameObject{
-    int width = 50;
-    int height = 50;
-    
-    GameMap map;
-    
-    PVector position;
+class Tank implements Sound {
+
+    PVector pos;
+
     PVector velocity;
     PVector acceleration;
     PVector target;
     float heading;
-    float topspeed = 12;
+    float topspeed = 1;
+    float rotationspeed = 2;
 
-    public Sensor sensor;
-    boolean paused = true;
-    
-    Tank(GameMap map) {
-        this.map = map;
-        map.tank = this;
-        sensor = new Sensor(this, 1);
-        heading = 50;
-        
-        position = new PVector(300, 300);
-        velocity = acceleration = target = new PVector(0,0);
+    boolean rotating = false;
+    SoundManager sm;
 
-        executeAction();
+    Radio radio;
+
+    int id;
+    int status = 3;
+
+    int w = 45;
+    int h = 45;
+    color team_color;
+    FOV fov;
+
+    Tank(PVector pos, color team_color, float heading, int id){
+        this.pos = pos;
+        this.team_color = team_color;
+        this.heading = heading;
+        this.id = id;
+        velocity = acceleration = new PVector(0,0);
+        target = pos;
+    }
+
+    void add_fov(FOV f){
+        fov = f;
+    }
+
+    void produce_sound(SoundManager s){
+        s.make_sound(pos);
+    }
+
+    void perceive_sound(PVector pos){
         
     }
-    
-    HashMap<PVector, Integer> percept() {
-        return sensor.sense(position);
+
+    void add_sound_manager(SoundManager s){
+        sm = s;
     }
-    
-    void executeAction() {
-        float prob = 0.01;
-        HashMap<PVector, Integer> percepts = percept();
-    
-        PVector nextPos = getNextPosition();
+    void connectTo(Radio r) {
+        radio = r;
+    }
 
-        int info = percepts.get(nextPos);
+    void listenTo(Message m) {
+        print("Message received from " + m.id + " by " + id);
+    }
 
-        // Simulating percepting and acting
-        boolean ready = false;
-        while(!ready){
-            if(info == 3){
-                map.rememberDanger(position);
-                nextPos = getNextPosition();
-                info = percepts.get(nextPos);
-            } else if(info == 2){
-                nextPos = getNextPosition();
-                info = percepts.get(nextPos);
-            } else if (info == 1){
-                float r = random(1);
-                if (r < prob){
-                    ready = true;
-                } else {
-                    nextPos = getNextPosition();
-                    info = percepts.get(nextPos);
-                }
+    void rotate() {
+    PVector desired = PVector.sub(target, pos);
+    float dif = heading - desired.heading();
+
+    if(abs(dif) > radians(rotationspeed)){
+        produce_sound(sm);
+        if(dif <= 0){
+            heading += radians(rotationspeed);
+        } else {
+            heading -= radians(rotationspeed);
+        }
+      
+    } else {
+        heading = desired.heading();
+        rotating = false;
+    }
+
+}
+
+    void step() {
+            float stepx = random(-250, 250);
+            float stepy = random(-250, 250);
+            while(pos.x+stepx < 0 || pos.x+stepx > width || pos.y+stepy < 0 || pos.y+stepy > height){
+                stepx = random(-250, 250);
+                stepy = random(-250, 250);
+            }
+            target = new PVector(pos.x + stepx, pos.y + stepy);
+            rotating = true;
+        } 
+   
+    void arrive() {
+            PVector desired = PVector.sub(target, pos);
+            float d = desired.mag();
+            desired.normalize();
+
+            if (d < 1) {
+                float m = map(d,0,100,0,topspeed);
+                desired.setMag(m);
+                step(); 
             } else {
-                ready = true;
+                desired.setMag(topspeed);
             }
 
-        }
-
-        map.setVisited(position);
-
-        target = map.gridToMap(nextPos);
-        rotateTo(target);
-        
-    }
-
-    void rotateTo(PVector to){
-        PVector rotate = PVector.sub(to, position);
-        heading = rotate.heading();
-    }
+            PVector steer = PVector.sub(desired,velocity);
+            steer.limit(1);
+            acceleration.add(steer);
+        } 
     
-    PVector getNextPosition() {
-        PVector raw = map.lookup(position);
-        int stepx = int(random(3)) - 1;
-        int stepy = int(random(3)) - 1;
+    
+    
 
-        return new PVector((int)raw.x + stepx, (int)raw.y + stepy);
-         
-    }
-    
-    public PVector getPosition() {
-        return this.position;
-    }
-    public float getWidth() {
-        return this.width;
-    }
-    public float getHeight() {
-        return this.height;
-    }
-    
-    void moveTo(PVector target) {
-        this.target = target;
-    }
-    
-    /*
-    * Här används koden av Daniel Shiffman för ett "Arriving Behaviour"
-    * Daniel Shiffman. The Nature of Code, Ch. 6.4. https://natureofcode.com/book/chapter-6-autonomous-agents/
-    */
-    void arrive() {
+    // Move in cardinal directions
+    // Rotate 
+    // Fire @Target
+    // Reload canon (3 sec)
+    // Add sensors
 
-        PVector desired = PVector.sub(target, position);
-       
-        float d = desired.mag();
-        desired.normalize();
-       
-        if (d < 10) {
-            float m = map(d,0,100,0,topspeed);
-            desired.setMag(m);
+    void move(){
+        if(rotating){
+            //rotate();
         } else {
-            desired.setMag(topspeed);
+            //arrive();
+            velocity.add(acceleration);
+            velocity.limit(topspeed);
+            pos.add(velocity);
+            acceleration.mult(0);
         }
-        
-        PVector steer = PVector.sub(desired,velocity);
-        steer.limit(1);
-        acceleration.add(steer);
-
-        if (d < 1) {
-            executeAction();       
-        }
-    } 
-    
-    void resume(){
-        paused = false;
-    }  
-    
-    void render() {
-        arrive();
-        // Update velocity
-        velocity.add(acceleration);
-        // Limit speed
-        velocity.limit(topspeed);
-        position.add(velocity);
-        // Reset accelerationelertion to 0 each cycle
-        acceleration.mult(0);
-        display();
+       
     }
-    
-    void display() {
+
+    void display(){
         stroke(0);
         strokeWeight(2);
-        fill(127);
-        ellipse(position.x, position.y, 50, 50);
-        line(position.x, position.y, position.x + (50*cos(heading)), position.y + (50*sin(heading)));
+
+        fill(team_color);
+        ellipse(pos.x, pos.y, w, h);
+
+        // Health status
+        rect(pos.x-20, pos.y-40, 15, 5);
+        rect(pos.x-5, pos.y-40, 15, 5);
+        rect(pos.x+10, pos.y-40, 15, 5);
     }
-    
+
 }
